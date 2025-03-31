@@ -48,9 +48,6 @@ void init(void) {
     // initialise sokol time
     stm_setup();
 
-    // hide mouse cursor
-    sapp_show_mouse(false);
-
     // get vertices
     sjd::Icosahedron myShape {};
 
@@ -173,6 +170,16 @@ void event(const sapp_event* e) {
     else if (e -> type == SAPP_EVENTTYPE_KEY_UP) {
         if (e -> key_code == SAPP_KEYCODE_F && keys::F_KEY) {
         // F_KEY was previously pressed (debouncing)
+            keys::F_KEY = false;
+            swap_prims();
+        }
+    }
+    else if (e -> type == SAPP_EVENTTYPE_TOUCHES_BEGAN) {
+            keys::F_KEY = true;
+    }
+    else if (e -> type == SAPP_EVENTTYPE_TOUCHES_ENDED) {
+        if (keys::F_KEY) {
+        // Screen was previously pressed (debouncing)
             keys::F_KEY = false;
             swap_prims();
         }

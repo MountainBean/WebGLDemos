@@ -3806,8 +3806,6 @@ var wasmImports = {
   /** @export */
   sapp_js_request_pointerlock,
   /** @export */
-  sapp_js_set_cursor,
-  /** @export */
   sapp_js_set_favicon
 };
 var wasmExports;
