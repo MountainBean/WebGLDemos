@@ -44,7 +44,7 @@ public:
 
     void processMouseMovement(float xoffset,
                               float yoffset, 
-                              GLboolean constrainPitch = true);
+                              bool constrainPitch = true);
 
     void processMouseScroll(float yoffset);
 
@@ -91,7 +91,7 @@ inline void Camera::processKeyboard(Camera::Movement direction,
 
 inline void Camera::processMouseMovement(float xoffset,
                                          float yoffset,
-                                         GLboolean constrainPitch) {
+                                         bool constrainPitch) {
     xoffset *= mouseSensitivity;
     yoffset *= mouseSensitivity;
 

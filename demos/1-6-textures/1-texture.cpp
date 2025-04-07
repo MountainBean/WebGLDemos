@@ -6,10 +6,10 @@
 #define SOKOL_GLES3
 #endif
 #include <array>
-#include <sokol_app.h>
-#include <sokol_gfx.h>
-#include <sokol_glue.h>
-#include <sokol_fetch.h>
+#include <sokol/sokol_app.h>
+#include <sokol/sokol_gfx.h>
+#include <sokol/sokol_glue.h>
+#include <sokol/sokol_fetch.h>
 #include <stb/stb_image.h>
 #include "1-texture.glsl.h"
 #include <cstdint>
