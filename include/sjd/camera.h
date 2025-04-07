@@ -29,6 +29,9 @@ public:
     float movementSpeed {};
     float mouseSensitivity {};
     float zoom {};
+    bool firstMouse {true};
+    float lastX;
+    float lastY;
 
 
     Camera(glm::vec3 initialPosition = glm::vec3(0.0f, 0.0f, 3.0f),
@@ -65,7 +68,7 @@ inline Camera::Camera(glm::vec3 initialPosition,
 , right     {}
 , pitch     {defPitch}
 , yaw       {defYaw}
-, movementSpeed {2.5f}
+, movementSpeed {5.f}
 , mouseSensitivity {0.1f}
 , zoom {45.0f}
 {
