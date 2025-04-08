@@ -1,5 +1,6 @@
 #ifndef SOK_TEXTURE_H
 #define SOK_TEXTURE_H
+#define STB_IMAGE_IMPLEMENTATION
 #include <sokol/sokol_gfx.h>
 #include <sokol/sokol_fetch.h>
 #include <array>

@@ -5,10 +5,14 @@
  * taking instruction from icosphere:
  * https://www.songho.ca/opengl/gl_sphere.htm
  */
+#include "glm/ext/matrix_common.hpp"
+#include "glm/ext/quaternion_geometric.hpp"
 #include <array>
 #include <cmath>
 #include <cstdint>
 #include <vector>
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 namespace constants {
     const float pi {3.141592654f};
@@ -109,6 +113,49 @@ public:
             i += 3;
         }
         return primVertices;
+    }
+
+    const std::array<float, 360> getPrimVerticesNorms() const {
+        std::array<float, 360> primVerticesNorms {};
+        for (int i = 0; i < 20; i++) {
+            // i is the row in the indices list
+            primVerticesNorms[18*i +  0] = m_vertices[3 * m_indices[3*i+0]+0];  // 0x
+            primVerticesNorms[18*i +  1] = m_vertices[3 * m_indices[3*i+0]+1];  // 0y
+            primVerticesNorms[18*i +  2] = m_vertices[3 * m_indices[3*i+0]+2];  // 0z
+            primVerticesNorms[18*i +  6] = m_vertices[3 * m_indices[3*i+1]+0];  // 1x
+            primVerticesNorms[18*i +  7] = m_vertices[3 * m_indices[3*i+1]+1];  // 1y
+            primVerticesNorms[18*i +  8] = m_vertices[3 * m_indices[3*i+1]+2];  // 1z
+            primVerticesNorms[18*i + 12] = m_vertices[3 * m_indices[3*i+2]+0];  // 2x
+            primVerticesNorms[18*i + 13] = m_vertices[3 * m_indices[3*i+2]+1];  // 2y
+            primVerticesNorms[18*i + 14] = m_vertices[3 * m_indices[3*i+2]+2];  // 2z
+
+            // We're drawing a crude sphere so all prims should be facing the 
+            // origin this means taking the average of each vertex of a prim
+            // should produce a vector for the centre of the prim which will
+            // also be the prim's Normal.
+            float aveX = (primVerticesNorms[18*i +  0] +
+                          primVerticesNorms[18*i +  6] +
+                          primVerticesNorms[18*i + 12]) / 3;
+            float aveY = (primVerticesNorms[18*i +  1] +
+                          primVerticesNorms[18*i +  7] +
+                          primVerticesNorms[18*i + 13]) / 3;
+            float aveZ = (primVerticesNorms[18*i +  2] +
+                          primVerticesNorms[18*i +  8] +
+                          primVerticesNorms[18*i + 14]) / 3;
+            glm::vec3 normVec = glm::normalize(glm::vec3(aveX, aveY, aveZ));
+
+            primVerticesNorms[18*i +  3] = normVec.x;
+            primVerticesNorms[18*i +  4] = normVec.y;
+            primVerticesNorms[18*i +  5] = normVec.z;
+            primVerticesNorms[18*i +  9] = normVec.x;
+            primVerticesNorms[18*i + 10] = normVec.y;
+            primVerticesNorms[18*i + 11] = normVec.z;
+            primVerticesNorms[18*i + 15] = normVec.x;
+            primVerticesNorms[18*i + 16] = normVec.y;
+            primVerticesNorms[18*i + 17] = normVec.z;
+        }
+        return primVerticesNorms;
+        
     }
 
 private:
