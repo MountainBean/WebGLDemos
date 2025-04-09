@@ -7,7 +7,7 @@ SET CODEDIR="%cd%"
 
 mkdir ..\..\embuild
 pushd ..\..\embuild
-em++ %CODEDIR%/%1.cpp -o %1.html -I%HOME%/OpenGL/include -I../include -sUSE_WEBGL2 -std=c++20 --shell-file ..\code\shell.html --embed-file data\container2.png
+em++ %CODEDIR%/%1.cpp -o %1.html -I%HOME%/OpenGL/include -I../include -sUSE_WEBGL2 -s TOTAL_STACK=32MB -g -std=c++20 --shell-file ..\code\shell.html --embed-file ".\data\container2.png"
 popd
 goto eof
 

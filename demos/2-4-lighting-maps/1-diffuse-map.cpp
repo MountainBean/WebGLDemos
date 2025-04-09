@@ -4,6 +4,7 @@
 #include <sjd/sok_texture.h>
 #include <array>
 
+#define SOKOL_DEBUG
 #define SOKOL_IMPL
 #ifndef __EMSCRIPTEN__
 #define SOKOL_GLCORE
@@ -28,7 +29,8 @@
 namespace state {
     sg_pipeline pip_object;
     sg_pipeline pip_light;
-    sg_bindings bind;
+    sg_bindings bind_object;
+    sg_bindings bind_light;
     sg_pass_action pass_action;
     glm::vec3 light_pos;
     glm::vec3 light_colour;
@@ -43,6 +45,14 @@ namespace state {
     bool moveRight;
 }
 
+static void fail_callback() {
+    state::pass_action = sg_pass_action {
+        .colors = {{ .load_action=SG_LOADACTION_CLEAR,
+            .clear_value = { 1.0f, 0.0f, 0.0f, 1.0f }
+        }}
+    };
+}
+
 static void init(void) {
     sg_setup(sg_desc {
         .logger {
@@ -52,7 +62,7 @@ static void init(void) {
     });
 
     sfetch_setup(sfetch_desc_t {
-        .max_requests = 2,
+        .max_requests = 8,
         .num_channels = 1,
         .num_lanes = 1,
         .logger {
@@ -110,11 +120,14 @@ static void init(void) {
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
     };
 
-    state::bind.vertex_buffers[0] = sg_make_buffer(sg_buffer_desc {
+    sg_buffer cube_buffer = sg_make_buffer(sg_buffer_desc {
         .size = sizeof(vertices),
         .data = SG_RANGE(vertices),
         .label = "cube-vertices"
     });
+
+    state::bind_object.vertex_buffers[0] = cube_buffer;
+    state::bind_light.vertex_buffers[0] = cube_buffer;
 
     // create shader from code-generated sg_shader_desc
     sg_shader phong_shd = sg_make_shader(phong_shader_desc(sg_query_backend()));
@@ -140,7 +153,6 @@ static void init(void) {
     // Now we make the seperate shader for the light cube
     sg_shader light_cube_shd = sg_make_shader(light_cube_shader_desc(sg_query_backend()));
 
-    // create a pipeline object (default render states are fine for triangle)
     state::pip_light = sg_make_pipeline(sg_pipeline_desc {
         .shader = light_cube_shd,
         .layout = layout,
@@ -159,11 +171,12 @@ static void init(void) {
 	}}
     };
     
-    SokTexture container2("data/container2.png",
-                          state::bind,
+    SokTexture container2("../data/container2.png",
+                          state::bind_object,
                           IMG__diffuse_texture,
                           SMP_diffuse_texture_smp,
-                          true);
+                          true,
+                          fail_callback);
 
 }
 
@@ -222,7 +235,7 @@ void frame(void) {
 
     // Prepare and draw object
     sg_apply_pipeline(state::pip_object);
-    sg_apply_bindings(state::bind);
+    sg_apply_bindings(state::bind_object);
 
     vs_params.model = glm::mat4(1.0f);
     sg_apply_uniforms(UB_vs_params, SG_RANGE(vs_params));
@@ -250,7 +263,7 @@ void frame(void) {
 
     // Prepare and draw Light Cube
     sg_apply_pipeline(state::pip_light);
-    sg_apply_bindings(state::bind);
+    sg_apply_bindings(state::bind_light);
 
     glm::mat4 model = glm::translate(glm::mat4(1.0f), state::light_pos);
     vs_params.model = glm::scale(model, glm::vec3(0.2f));
@@ -346,7 +359,7 @@ sapp_desc sokol_main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         .width = 800,
         .height = 600,
         .high_dpi = true,
-        .window_title = "Material - LearnOpenGL",
+        .window_title = "Diffuse Map - LearnOpenGL",
         .logger {
             .func = slog_func
         },

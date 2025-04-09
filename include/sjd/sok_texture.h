@@ -1,8 +1,10 @@
 #ifndef SOK_TEXTURE_H
 #define SOK_TEXTURE_H
 #define STB_IMAGE_IMPLEMENTATION
+#define SOKOL_DEBUG
 #include <sokol/sokol_gfx.h>
 #include <sokol/sokol_fetch.h>
+#include <sokol/sokol_log.h>
 #include <array>
 #include <iostream>
 #include <stb/stb_image.h>
@@ -24,27 +26,37 @@ static const sg_sampler_desc global_sampler_desc = {
     .compare = SG_COMPAREFUNC_NEVER,
 };
 
+struct img_req_data {
+    sg_image img_id;
+    void(*fail_callback)();
+};
+
 class SokTexture {
 public:
 
-    SokTexture(const std::string& path, sg_bindings& bindings, uint16_t image_index, uint16_t smp_index, bool flip_vert=false) {
+    SokTexture(const std::string& path, sg_bindings& bindings, uint16_t image_index, uint16_t smp_index, bool flip_vert=false, void(*fail_callback)() = nullptr) {
 
         sg_alloc_image_smp(bindings, image_index, smp_index);
         stbi_set_flip_vertically_on_load(flip_vert);
 
         image = bindings.images[image_index];
+        img_req_data req_data {
+            .img_id = image,
+            .fail_callback = fail_callback
+        };
+        
 
         // start loading the given file 
         sfetch_send(sfetch_request_t {
             .path = path.c_str(),
             .callback = fetch_callback,
             .buffer = SFETCH_RANGE(file_buffer),
-            .user_data = SFETCH_RANGE(image),
+            .user_data = SFETCH_RANGE(req_data),
         });
     }
 
     sg_image image {};
-    std::array<uint8_t, 512 * 1028> file_buffer;
+    std::array<uint8_t, 512 * 1024> file_buffer;
 
 private:
     void sg_alloc_image_smp(sg_bindings& bindings, uint16_t image_index, uint16_t smp_index) {
@@ -55,6 +67,8 @@ private:
 };
 
 static void fetch_callback(const sfetch_response_t* response) {
+    img_req_data req_data = *(img_req_data*)response->user_data;
+
     if (response->fetched) {
         int img_width;
         int img_height;
@@ -66,7 +80,7 @@ static void fetch_callback(const sfetch_response_t* response) {
             &img_width, &img_height,
             &nrChannels, desired_channels);
         if (pixels) {
-            sg_image image = *static_cast<sg_image*>(response->user_data);
+            sg_image image = req_data.img_id;
             sg_init_image(image, sg_image_desc {
                 .width = img_width,
                 .height = img_height,
@@ -83,7 +97,9 @@ static void fetch_callback(const sfetch_response_t* response) {
         }
     }
     else if (response->failed) {
-        std::cout << "ERROR::TEXTURE::Failed to load texture" << std::endl;
+        if (req_data.fail_callback) {
+            req_data.fail_callback();
+        }
     }
 }
 
