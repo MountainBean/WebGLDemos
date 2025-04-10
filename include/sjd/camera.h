@@ -1,6 +1,8 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include <array>
+#include <bitset>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
@@ -15,6 +17,11 @@ public:
         RIGHT,
         UP,
         DOWN
+    };
+
+    enum Key {
+        RELEASE,
+        PRESS
     };
 
     glm::vec3 up;
@@ -43,7 +50,9 @@ public:
         return glm::lookAt(pos, pos + front, up);
     }
 
-    void processKeyboard(Movement direction, float deltaTime);
+    void processKeyboard(Movement direction, Key keyAction);
+
+    void moveCamera(float deltaTime);
 
     void processMouseMovement(float xoffset,
                               float yoffset, 
@@ -54,7 +63,9 @@ public:
 private:
     // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors();
-
+    std::array<bool, 6> movement {}; 
+    // forward, backward, left, right, up, down
+    //
 };
 
 inline Camera::Camera(glm::vec3 initialPosition,
@@ -76,19 +87,40 @@ inline Camera::Camera(glm::vec3 initialPosition,
 }
 
 inline void Camera::processKeyboard(Camera::Movement direction,
-                                    float deltaTime) {
+                                    Key keyAction) {
+    if (direction == FORWARD) {
+        movement[FORWARD] = static_cast<bool>(keyAction);
+    }
+    if (direction == BACKWARD) {
+        movement[BACKWARD] = static_cast<bool>(keyAction);
+    }
+    if (direction == LEFT) {
+        movement[LEFT] = static_cast<bool>(keyAction);
+    }
+    if (direction == RIGHT) {
+        movement[RIGHT] = static_cast<bool>(keyAction);
+    }
+    if (direction == UP) {
+        movement[UP] = static_cast<bool>(keyAction);
+    }
+    if (direction == DOWN) {
+        movement[DOWN] = static_cast<bool>(keyAction);
+    }
+}
+
+inline void Camera::moveCamera(float deltaTime) {
     float velocity {movementSpeed * deltaTime};
-    if (direction == FORWARD)
+    if (movement[FORWARD])
         pos += glm::normalize(glm::vec3(front.x, 0.0f, front.z)) * velocity;
-    if (direction == BACKWARD)
+    if (movement[BACKWARD])
         pos -= glm::normalize(glm::vec3(front.x, 0.0f, front.z)) * velocity;
-    if (direction == LEFT)
+    if (movement[LEFT])
         pos -= right * velocity;
-    if (direction == RIGHT)
+    if (movement[RIGHT])
         pos += right * velocity;
-    if (direction == UP)
+    if (movement[UP])
         pos += worldUp * velocity;
-    if (direction == DOWN)
+    if (movement[DOWN])
         pos -= worldUp * velocity;
 }
 
