@@ -35,12 +35,6 @@ namespace state {
     sjd::Camera camera {};
     uint64_t last_time;
     float deltaTime;
-    bool moveUp;
-    bool moveDown;
-    bool moveForward;
-    bool moveBackward;
-    bool moveLeft;
-    bool moveRight;
 }
 
 void init(void) {
@@ -129,24 +123,7 @@ void frame(void) {
         sapp_lock_mouse(true);
     }
 
-    if (state::moveUp) {
-        state::camera.processKeyboard(state::camera.UP, state::deltaTime);
-    }
-    if (state::moveDown) {
-        state::camera.processKeyboard(state::camera.DOWN, state::deltaTime);
-    }
-    if (state::moveForward) {
-        state::camera.processKeyboard(state::camera.FORWARD, state::deltaTime);
-    }
-    if (state::moveBackward) {
-        state::camera.processKeyboard(state::camera.BACKWARD, state::deltaTime);
-    }
-    if (state::moveLeft) {
-        state::camera.processKeyboard(state::camera.LEFT, state::deltaTime);
-    }
-    if (state::moveRight) {
-        state::camera.processKeyboard(state::camera.RIGHT, state::deltaTime);
-    }
+    state::camera.moveCamera(state::deltaTime);
 
     sg_begin_pass(sg_pass {
         .action = state::pass_action,
@@ -223,46 +200,33 @@ void event(const sapp_event* e) {
         if (e->key_code == SAPP_KEYCODE_ESCAPE) {
             sapp_request_quit();
         }
-        if (e->key_code == SAPP_KEYCODE_SPACE) {
-            state::moveUp = true;
-        }
-        if (e->key_code == SAPP_KEYCODE_C) {
-            state::moveDown = true;
-        }
-        if (e->key_code == SAPP_KEYCODE_W) {
-            state::moveForward = true;
-        }
-        if (e->key_code == SAPP_KEYCODE_S) {
-            state::moveBackward = true;
-        }
-        if (e->key_code == SAPP_KEYCODE_A) {
-            state::moveLeft = true;
-        }
-        if (e->key_code == SAPP_KEYCODE_D) {
-            state::moveRight = true;
-        }
+        if (e->key_code == SAPP_KEYCODE_SPACE)
+            state::camera.processKeyboard(sjd::Camera::UP, sjd::Camera::PRESS);
+        if (e->key_code == SAPP_KEYCODE_C)
+            state::camera.processKeyboard(sjd::Camera::DOWN, sjd::Camera::PRESS);
+        if (e->key_code == SAPP_KEYCODE_W)
+            state::camera.processKeyboard(sjd::Camera::FORWARD, sjd::Camera::PRESS);
+        if (e->key_code == SAPP_KEYCODE_S) 
+            state::camera.processKeyboard(sjd::Camera::BACKWARD, sjd::Camera::PRESS);
+        if (e->key_code == SAPP_KEYCODE_A)
+            state::camera.processKeyboard(sjd::Camera::LEFT, sjd::Camera::PRESS);
+        if (e->key_code == SAPP_KEYCODE_D)
+            state::camera.processKeyboard(sjd::Camera::RIGHT, sjd::Camera::PRESS);
     }
 
     if (e->type == SAPP_EVENTTYPE_KEY_UP) {
-        if (e->key_code == SAPP_KEYCODE_SPACE) {
-            state::moveUp = false;
-        }
-        if (e->key_code == SAPP_KEYCODE_C) {
-            state::moveDown = false;
-        }
-        if (e->key_code == SAPP_KEYCODE_W) {
-            state::moveForward = false;
-        }
-        if (e->key_code == SAPP_KEYCODE_S) {
-            state::moveBackward = false;
-        }
-        if (e->key_code == SAPP_KEYCODE_A) {
-            state::moveLeft = false;
-        }
-        if (e->key_code == SAPP_KEYCODE_D) {
-            state::moveRight = false;
-        }
-
+        if (e->key_code == SAPP_KEYCODE_SPACE)
+            state::camera.processKeyboard(sjd::Camera::UP, sjd::Camera::RELEASE);
+        if (e->key_code == SAPP_KEYCODE_C)
+            state::camera.processKeyboard(sjd::Camera::DOWN, sjd::Camera::RELEASE);
+        if (e->key_code == SAPP_KEYCODE_W)
+            state::camera.processKeyboard(sjd::Camera::FORWARD, sjd::Camera::RELEASE);
+        if (e->key_code == SAPP_KEYCODE_S) 
+            state::camera.processKeyboard(sjd::Camera::BACKWARD, sjd::Camera::RELEASE);
+        if (e->key_code == SAPP_KEYCODE_A)
+            state::camera.processKeyboard(sjd::Camera::LEFT, sjd::Camera::RELEASE);
+        if (e->key_code == SAPP_KEYCODE_D)
+            state::camera.processKeyboard(sjd::Camera::RIGHT, sjd::Camera::RELEASE);
     }
     if (e->type == SAPP_EVENTTYPE_TOUCHES_BEGAN) {
         state::camera.lastX = e->touches[0].pos_x;
@@ -273,7 +237,7 @@ void event(const sapp_event* e) {
         float offsetY = state::camera.lastY - e -> touches[0].pos_y;
         state::camera.lastX = e->touches[0].pos_x;
         state::camera.lastY = e->touches[0].pos_y;
-        state::camera.processMouseMovement(offsetX, offsetY);
+        state::camera.orbitCamera(offsetX, offsetY);
     }
     if (e->type == SAPP_EVENTTYPE_MOUSE_MOVE) {
         state::camera.processMouseMovement(e->mouse_dx, -e->mouse_dy);

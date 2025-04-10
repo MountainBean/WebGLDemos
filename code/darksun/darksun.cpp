@@ -266,7 +266,7 @@ void event(const sapp_event* e) {
         float offsetY = state::camera.lastY - e -> touches[0].pos_y;
         state::camera.lastX = e->touches[0].pos_x;
         state::camera.lastY = e->touches[0].pos_y;
-        state::camera.processMouseMovement(offsetX, offsetY);
+        state::camera.orbitCamera(offsetX, offsetY);
     }
     if (e->type == SAPP_EVENTTYPE_MOUSE_MOVE) {
         state::camera.processMouseMovement(e->mouse_dx, -e->mouse_dy);

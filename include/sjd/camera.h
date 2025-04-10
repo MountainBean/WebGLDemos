@@ -1,6 +1,11 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include "glm/common.hpp"
+#include "glm/ext/scalar_constants.hpp"
+#include "glm/ext/vector_float2.hpp"
+#include "glm/ext/vector_float3.hpp"
+#include "glm/geometric.hpp"
 #include <array>
 #include <bitset>
 #include <glm/glm.hpp>
@@ -54,6 +59,10 @@ public:
 
     void moveCamera(float deltaTime);
 
+    void turnTo(glm::vec3 point3d = glm::vec3(0.0f));
+
+    void orbitCamera(float xoffset, float yoffset);
+
     void processMouseMovement(float xoffset,
                               float yoffset, 
                               bool constrainPitch = true);
@@ -64,8 +73,7 @@ private:
     // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors();
     std::array<bool, 6> movement {}; 
-    // forward, backward, left, right, up, down
-    //
+    float orbitRadius {4};
 };
 
 inline Camera::Camera(glm::vec3 initialPosition,
@@ -122,6 +130,48 @@ inline void Camera::moveCamera(float deltaTime) {
         pos += worldUp * velocity;
     if (movement[DOWN])
         pos -= worldUp * velocity;
+}
+
+inline void Camera::turnTo(glm::vec3 point3d) {
+    float offset_x = pos.x - point3d.x;
+    float offset_y = pos.y - point3d.y;
+    float offset_z = pos.z - point3d.z;
+    float offset_xz = glm::length(glm::vec2(offset_x, offset_z));
+
+    if (offset_x == 0) {
+        (offset_z > 0) ? yaw = -90.0f : yaw = 90.0f;
+    }
+    if (offset_x < 0) {
+        yaw = atanf(offset_z/offset_x) * 180/glm::pi<float>();
+    }
+    else if (offset_x > 0) {
+        if (offset_z < 0)
+            yaw = atanf(offset_z/offset_x) * 180/glm::pi<float>() + 180.0f;
+        else
+            yaw = atanf(offset_z/offset_x) * 180/glm::pi<float>() - 180.0f;
+    }
+    pitch = atanf(-offset_y/offset_xz) * 180/glm::pi<float>();
+
+    // update Front, Right and Up Vectors using the updated Euler angles
+    updateCameraVectors();
+}
+
+inline void Camera::orbitCamera(float xoffset, float yoffset) {
+    xoffset *= mouseSensitivity * -0.1f;
+    yoffset *= mouseSensitivity * -0.1f;
+
+    pos += right * xoffset; 
+    pos.y = pos.y + up.y * yoffset;
+
+    if (pos.x > 0 && up.x*yoffset > 0){
+        pos.x = pos.x + up.x * yoffset;
+    }
+    if (pos.z > 0 && up.z*yoffset > 0) {
+        pos.z = pos.z + up.z * yoffset;
+    }
+
+    pos = orbitRadius * glm::normalize(pos);
+    turnTo();
 }
 
 inline void Camera::processMouseMovement(float xoffset,
