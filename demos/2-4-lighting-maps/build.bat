@@ -6,7 +6,7 @@ if [%1]==[] goto fail
 SET CODEDIR="%cd%"
 mkdir ..\..\build
 pushd ..\..\build
-cl %CODEDIR%/%1.cpp -I%HOME%/OpenGL/include /I../include -std:c++20 -EHsc
+cl %CODEDIR%/%1.cpp -I%HOME%/OpenGL/include /I../include -std:c++20 -EHsc -Zi
 popd
 goto eof
 

@@ -1,5 +1,7 @@
 #ifndef SOK_TEXTURE_H
 #define SOK_TEXTURE_H
+#include <cstdint>
+#include <vector>
 #define STB_IMAGE_IMPLEMENTATION
 #define SOKOL_DEBUG
 #include <sokol/sokol_gfx.h>
@@ -15,6 +17,8 @@
 // clangd doesn't like leaving struct elements value-initialised
 #pragma clang diagnostic ignored "-Wmissing-designated-field-initializers"
 #endif
+
+static std::vector<uint8_t> file_buffer{std::vector<uint8_t>(512*1024)};
 
 static void fetch_callback(const sfetch_response_t* response);
 
@@ -36,6 +40,7 @@ public:
 
     SokTexture(const std::string& path, sg_bindings& bindings, uint16_t image_index, uint16_t smp_index, bool flip_vert=false, void(*fail_callback)() = nullptr) {
 
+        
         sg_alloc_image_smp(bindings, image_index, smp_index);
         stbi_set_flip_vertically_on_load(flip_vert);
 
@@ -50,13 +55,16 @@ public:
         sfetch_send(sfetch_request_t {
             .path = path.c_str(),
             .callback = fetch_callback,
-            .buffer = SFETCH_RANGE(file_buffer),
+            .buffer = sfetch_range_t {
+                .ptr = file_buffer.data(),
+                .size = file_buffer.capacity(),
+            },
             .user_data = SFETCH_RANGE(req_data),
         });
     }
 
     sg_image image {};
-    std::array<uint8_t, 512 * 1024> file_buffer;
+
 
 private:
     void sg_alloc_image_smp(sg_bindings& bindings, uint16_t image_index, uint16_t smp_index) {

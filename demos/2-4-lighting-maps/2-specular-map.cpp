@@ -19,7 +19,7 @@
 #include <sokol/sokol_time.h>
 
 // add the shader after glm
-#include "1-diffuse-map.glsl.h"
+#include "2-specular-map.glsl.h"
 
 #ifdef __clang__
 // clangd doesn't like leaving struct elements value-initialised
@@ -69,7 +69,7 @@ static void init(void) {
     state::light_colour = glm::vec3(1.0f);
     state::light_pos = glm::vec3(1.0f, 1.2f, 2.0f);
 
-    std::array<float, 288> vertices {
+    std::vector<float> vertices {
         // positions          // normals           // texture coords
         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
          0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
@@ -115,8 +115,11 @@ static void init(void) {
     };
 
     sg_buffer cube_buffer = sg_make_buffer(sg_buffer_desc {
-        .size = sizeof(vertices),
-        .data = SG_RANGE(vertices),
+        .size = vertices.size() * sizeof(float),
+        .data = sg_range {
+            .ptr = vertices.data(),
+            .size = vertices.size() * sizeof(float),
+        },
         .label = "cube-vertices"
     });
 
@@ -172,6 +175,13 @@ static void init(void) {
                           true,
                           fail_callback);
 
+    SokTexture container2_specular("../data/container2_specular.png",
+                                   state::bind_object,
+                                   IMG__specular_texture,
+                                   SMP_specular_texture_smp,
+                                   true,
+                                   fail_callback);
+
 }
 
 void frame(void) {
@@ -183,18 +193,14 @@ void frame(void) {
     state::light_pos = glm::vec3(1.3f * sinf(static_cast<float>(stm_sec(stm_now()))),
                                  0.8f,
                                  1.3f * cosf(static_cast<float>(stm_sec(stm_now()))));
-
     // change light colour
     /*state::light_colour = 0.5f * glm::vec3(sinf((stm_sec(stm_now()) * 2.0f))+1,*/
     /*                                sinf((stm_sec(stm_now()) * 0.7f))+1,*/
     /*                                sinf((stm_sec(stm_now()) * 1.3f))+1);*/
 
-    // Movements
-
     if (!sapp_mouse_locked()) {
         sapp_lock_mouse(true);
     }
-
     state::camera.moveCamera(state::deltaTime);
 
     sg_begin_pass(sg_pass { 
@@ -223,7 +229,6 @@ void frame(void) {
     sg_apply_uniforms(UB_fs_params, SG_RANGE(fs_params));
 
     fs_material_t fs_material = {
-        .specular = glm::vec3(0.5f, 0.5f, 0.5f),
         .shininess = 32.0f,
     };
     sg_apply_uniforms(UB_fs_material, SG_RANGE(fs_material));
@@ -323,11 +328,14 @@ sapp_desc sokol_main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         .width = 800,
         .height = 600,
         .high_dpi = true,
-        .window_title = "Diffuse Map - LearnOpenGL",
+        .window_title = "Specular Map - LearnOpenGL",
         .logger {
             .func = slog_func
         },
-
+#ifdef _WIN32
+        .win32_console_utf8 = true,
+        .win32_console_attach = true,
+#endif
     };
 }
 
