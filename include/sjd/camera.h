@@ -47,10 +47,10 @@ public:
 
 
     Camera(glm::vec3 initialPosition = glm::vec3(0.0f, 0.0f, 3.0f),
+           glm::vec3 initialFocus = glm::vec3(0.0f),
            glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f),
            float defYaw = -90.0f,
-           float defPitch = 0.0f,
-           glm::vec3 initialFocus = glm::vec3(0.0f));
+           float defPitch = 0.0f);
 
     glm::mat4 getViewMatrix(){
         return glm::lookAt(pos, pos + front, up);
@@ -78,10 +78,10 @@ private:
 };
 
 inline Camera::Camera(glm::vec3 initialPosition,
+                      glm::vec3 initialFocus,
                       glm::vec3 cameraUp,
                       float defYaw,
-                      float defPitch,
-                      glm::vec3 initialFocus)
+                      float defPitch)
 : up        {cameraUp}
 , worldUp   {up}
 , pos       {initialPosition}
