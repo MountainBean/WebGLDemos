@@ -18,7 +18,7 @@
 #pragma clang diagnostic ignored "-Wmissing-designated-field-initializers"
 #endif
 
-static std::vector<uint8_t> file_buffer{std::vector<uint8_t>(512*1024)};
+static std::vector<uint8_t> file_buffer{std::vector<uint8_t>(2*1024*1024)};
 
 static void fetch_callback(const sfetch_response_t* response);
 
