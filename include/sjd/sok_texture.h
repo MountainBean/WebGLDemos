@@ -38,10 +38,10 @@ struct img_req_data {
 class SokTexture {
 public:
 
-    SokTexture(const std::string& path, sg_bindings& bindings, uint16_t image_index, uint16_t smp_index, bool flip_vert=false, void(*fail_callback)() = nullptr) {
+    SokTexture(const std::string& path, sg_bindings& bindings, uint16_t image_index, uint16_t smp_index, bool flip_vert=false, void(*fail_callback)() = nullptr, sg_sampler_desc* custom_sampler_desc=nullptr) {
 
         
-        sg_alloc_image_smp(bindings, image_index, smp_index);
+        sg_alloc_image_smp(bindings, image_index, smp_index, custom_sampler_desc);
         stbi_set_flip_vertically_on_load(flip_vert);
 
         image = bindings.images[image_index];
@@ -67,10 +67,13 @@ public:
 
 
 private:
-    void sg_alloc_image_smp(sg_bindings& bindings, uint16_t image_index, uint16_t smp_index) {
+    void sg_alloc_image_smp(sg_bindings& bindings, uint16_t image_index, uint16_t smp_index, sg_sampler_desc* custom_sampler_desc) {
         bindings.images[image_index] = sg_alloc_image();
         bindings.samplers[smp_index] = sg_alloc_sampler();
-        sg_init_sampler(bindings.samplers[smp_index], global_sampler_desc);
+        if (custom_sampler_desc)
+            sg_init_sampler(bindings.samplers[smp_index], custom_sampler_desc);
+        else
+            sg_init_sampler(bindings.samplers[smp_index], global_sampler_desc);
     }
 };
 
