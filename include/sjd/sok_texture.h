@@ -1,15 +1,16 @@
 #ifndef SOK_TEXTURE_H
 #define SOK_TEXTURE_H
+#ifndef STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
+#endif
 #include <cstdint>
 #include <vector>
-#define STB_IMAGE_IMPLEMENTATION
 #define SOKOL_DEBUG
 #include <sokol/sokol_gfx.h>
 #include <sokol/sokol_fetch.h>
 #include <sokol/sokol_log.h>
 #include <array>
 #include <iostream>
-#include <stb/stb_image.h>
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include <string>
